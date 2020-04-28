@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">The MoviesDB</string>
+    <string name="tmdb_api_key">1f788f81b000547febae339e97b1ea8e</string>
+    <string name="search_title">Search</string>
+    <string name="search_hint">Search Movie</string>
+
+    <string name="movie_detail">Movie Detail</string>
+    <string name="added_to_favourites">Movie added to Favourites</string>
+    <string name="removed_from_favourites">Removed from Favourites</string>
+    <string name="no_search_result">No Search Result</string>
+
+    <string name="network_error">Please connect to Network</string>
+    <string name="error_network">Network Error</string>
+    <string name="server_error">Error connecting to Server</string>
+</resources>
