@@ -2,8 +2,6 @@ package com.eros.moviesdb.view.fragments
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Message
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.eros.moviesdb.R
 import com.eros.moviesdb.adapter.TopRatedMoviesAdapter
-import com.eros.moviesdb.db.DBHelper
 import com.eros.moviesdb.model.response.Movies
 import com.eros.moviesdb.model.response.TopRatedMoviesRes
 import com.eros.moviesdb.utils.Constants
@@ -34,17 +31,17 @@ class TopRatedMoviesFragment : BaseFragment(), TopRatedMoviesViewHolder.OnTopRat
     private lateinit var gridLayoutManager : GridLayoutManager
     private lateinit var linearLayoutManager : LinearLayoutManager
 
-    private var pageNoTopRatedMovies = 1
+    //private var pageNoTopRatedMovies = 1
     private lateinit var adapterTopRatedMovies : TopRatedMoviesAdapter
     private var resTopRatedMovies : TopRatedMoviesRes? = null
     private var topRatedMoviesLst = ArrayList<Movies>()
 
-    private var pageNoSearchedMovies = 1
+    //private var pageNoSearchedMovies = 1
     private lateinit var adapterSearchedMovies : TopRatedMoviesAdapter
     private var searchedMoviesLst = ArrayList<Movies>()
 
-    private val TOP_RATED_HANDLER_CODE = 1
-    private val SEARCHED_HANDLER_CODE = 2
+    //private val TOP_RATED_HANDLER_CODE = 1
+    //private val SEARCHED_HANDLER_CODE = 2
     private var isTopRatedMoviesLoadingMore = false
     private var isSearchedMoviesLoadingMore = false
 
@@ -109,7 +106,7 @@ class TopRatedMoviesFragment : BaseFragment(), TopRatedMoviesViewHolder.OnTopRat
                 if (isTopRatedMoviesLoadingMore) {
                     if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount) {
                         isTopRatedMoviesLoadingMore = false;
-                        resTopRatedMovies?.let { viewModel.loadMoreTopRatedMovies(++pageNoTopRatedMovies) }
+                        resTopRatedMovies?.let { viewModel.loadMoreTopRatedMovies() }
                     }
                 }
             }
@@ -130,7 +127,7 @@ class TopRatedMoviesFragment : BaseFragment(), TopRatedMoviesViewHolder.OnTopRat
                 if (isSearchedMoviesLoadingMore) {
                     if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount) {
                         isSearchedMoviesLoadingMore = false;
-                        viewModel.loadMoreSearchedMovies(++pageNoSearchedMovies)
+                        viewModel.loadMoreSearchedMovies()
                     }
                 }
             }
@@ -166,54 +163,41 @@ class TopRatedMoviesFragment : BaseFragment(), TopRatedMoviesViewHolder.OnTopRat
             override fun onChanged(response: TopRatedMoviesRes?) {
                 resTopRatedMovies = response
 
-                isTopRatedMoviesLoadingMore = false
-                resTopRatedMovies?.total_pages?.let {
+                isTopRatedMoviesLoadingMore = viewModel.toLoadMoreTopRatedMovies()
+                /*resTopRatedMovies?.total_pages?.let {
                     if (pageNoTopRatedMovies < it) {
                         isTopRatedMoviesLoadingMore = true
                     }
-                }
+                }*/
 
                 resTopRatedMovies?.moviesLst?.let {
+                    topRatedMoviesLst.clear()
                     topRatedMoviesLst.addAll(it)
-                    refreshTopRatedMoviesData(null)
+                    adapterTopRatedMovies.setData(topRatedMoviesLst)
+                    adapterTopRatedMovies.notifyDataSetChanged()
+                    //refreshTopRatedMoviesData(null)
                 }
             }
         })
 
         viewModel.getSearchedMovies().observe(this, object : Observer<TopRatedMoviesRes> {
             override fun onChanged(searchedMovieRes: TopRatedMoviesRes?) {
-                isSearchedMoviesLoadingMore = false
-                searchedMovieRes?.total_pages?.let {
+
+                isSearchedMoviesLoadingMore = viewModel.toLoadMoreSearchedMovies()
+                /*searchedMovieRes?.total_pages?.let {
                     if (pageNoSearchedMovies < it) {
                         isSearchedMoviesLoadingMore = true
                     } else {
                         pageNoSearchedMovies = it
                     }
-                }
+                }*/
 
                 searchedMovieRes?.moviesLst?.let { setSearchedMoviesData(it) }
             }
         })
-
-        viewModel.resetOldSearchedMovies().observe(this, object : Observer<Boolean> {
-            override fun onChanged(status: Boolean?) {
-                searchedMoviesLst.clear()
-                adapterSearchedMovies.setData(searchedMoviesLst)
-                adapterSearchedMovies.notifyDataSetChanged()
-            }
-        })
-
-        viewModel.removeSearchView().observe(this, object : Observer<Boolean> {
-            override fun onChanged(status: Boolean?) {
-                searchedMoviesLst.clear()
-                adapterSearchedMovies.setData(searchedMoviesLst)
-                adapterSearchedMovies.notifyDataSetChanged()
-                searchLayout.visibility = View.GONE
-            }
-        })
     }
 
-    private val mHandler = object : Handler() {
+    /*private val mHandler = object : Handler() {
 
         override fun handleMessage(msg: Message?) {
             when(msg?.what) {
@@ -227,21 +211,24 @@ class TopRatedMoviesFragment : BaseFragment(), TopRatedMoviesViewHolder.OnTopRat
                 }
             }
         }
-    }
+    }*/
 
     fun setSearchedMoviesData(moviesLst : ArrayList<Movies>) {
 
+        searchedMoviesLst.clear()
         if (moviesLst.isNotEmpty()) {
             searchLayout.visibility = View.VISIBLE
             searchedMoviesLst.addAll(moviesLst)
-            refreshSearchedMoviesData(null)
+            adapterSearchedMovies.setData(searchedMoviesLst)
+            adapterSearchedMovies.notifyDataSetChanged()
+            //refreshSearchedMoviesData(null)
         } else {
             searchLayout.visibility = View.GONE
             Toast.makeText(requireContext(), requireContext().getString(R.string.no_search_result), Toast.LENGTH_LONG).show()
         }
     }
 
-    private fun refreshTopRatedMoviesData(obj: Movies?) {
+    /*private fun refreshTopRatedMoviesData(obj: Movies?) {
         Thread(object : Runnable {
             override fun run() {
                 if (obj == null) {
@@ -291,7 +278,7 @@ class TopRatedMoviesFragment : BaseFragment(), TopRatedMoviesViewHolder.OnTopRat
                 mHandler.sendEmptyMessage(SEARCHED_HANDLER_CODE)
             }
         }).start()
-    }
+    }*/
 
 
     override fun onItemClicked(movieObj: Movies) {
@@ -300,21 +287,21 @@ class TopRatedMoviesFragment : BaseFragment(), TopRatedMoviesViewHolder.OnTopRat
 
     override fun onFavouritesClicked(movieObj: Movies) {
         if (!movieObj.isFavourite) {
-            movieObj.isFavourite = true
+            //movieObj.isFavourite = true
             viewModel.addFavouriteMovieToDb(movieObj)
             Toast.makeText(requireContext(), requireContext().resources.getString(R.string.added_to_favourites), Toast.LENGTH_LONG).show()
         } else {
-            movieObj.isFavourite = false
+            //movieObj.isFavourite = false
             viewModel.removeFavouriteMovieFromDb(movieObj)
             Toast.makeText(requireContext(), requireContext().resources.getString(R.string.removed_from_favourites), Toast.LENGTH_LONG).show()
         }
 
-        refreshTopRatedMoviesData(movieObj)
-        refreshSearchedMoviesData(movieObj)
+        /*refreshTopRatedMoviesData(movieObj)
+        refreshSearchedMoviesData(movieObj)*/
 
     }
 
-    fun callMovieDetailScreen(movieObj: Movies) {
+    private fun callMovieDetailScreen(movieObj: Movies) {
         val intent = Intent(requireContext(), MovieDetailActivity::class.java)
         intent.putExtra(Constants.INTENT_MOVIE_ID, movieObj.id)
         requireContext().startActivity(intent)

@@ -13,11 +13,10 @@ import com.eros.moviesdb.viewholder.FavouriteMovieViewHolder
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 
-class FavouriteMovieAdapter (context : Context, isTopRated : Boolean = true) : RecyclerView.Adapter<FavouriteMovieViewHolder>() {
+class FavouriteMovieAdapter (context : Context) : RecyclerView.Adapter<FavouriteMovieViewHolder>() {
 
     private val moviesLst = ArrayList<FavouriteMoviesEntity>()
     private val context = context
-    private val isTopRated = isTopRated
     private var mListener : FavouriteMovieViewHolder.OnFavouriteMovieClickListener? = null
 
     fun setData(mvLst : ArrayList<FavouriteMoviesEntity>) {
@@ -30,10 +29,7 @@ class FavouriteMovieAdapter (context : Context, isTopRated : Boolean = true) : R
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FavouriteMovieViewHolder {
-        var resource = R.layout.item_top_rated_movie
-        if (!isTopRated) {
-            resource = R.layout.item_searched_movie
-        }
+        var resource = R.layout.item_favourite_movies
         val view : View = LayoutInflater.from(context).inflate(resource, parent, false)
         return FavouriteMovieViewHolder(view)
     }
@@ -51,9 +47,6 @@ class FavouriteMovieAdapter (context : Context, isTopRated : Boolean = true) : R
         holder.tvMovieTitle.text = movieData.movieTitle ?: Constants.EMPTY
 
         var posterWidth = Constants.POSTER_SIZE_400
-        if (!isTopRated) {
-            posterWidth = Constants.POSTER_SIZE_300
-        }
         movieData.posterPath?.let {
             Picasso.with(context).load("https://image.tmdb.org/t/p/w"+posterWidth + it)
                 .resize(posterWidth, posterWidth)
